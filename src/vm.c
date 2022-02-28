@@ -1,7 +1,7 @@
 #include "vm.h"
 #include "opcode.h"
 
-#define debug() { printf("si=%zu pi=%zu m=%zu cli=%zu clc=%zu pri=%zu cpi=%zu clst.pi=%zu clst.si=%zu ", si, pi, m, cli, clc, pri, cpi, cls[cli-1].pi, cls[cli-1].si); }
+#define vm_inspect() { printf("si=%zu pi=%zu m=%zu cli=%zu clc=%zu pri=%zu cpi=%zu clst.pi=%zu clst.si=%zu ", si, pi, m, cli, clc, pri, cpi, cls[cli-1].pi, cls[cli-1].si); }
 
 void growcalls(callframe_t** stack, size_t* cap) {
     callframe_t* tmp = *stack;
@@ -63,10 +63,11 @@ err_t vm_match(
     cli++;
 
     for (;;) {
-        if (!m) {
+        if (!m) { /* */
             if (cli == 0) { free(cls); return e; }
             if (cls[cli-1].si == SIZE_MAX) {cli--;}
             else {
+                m = 1;
                 pi = cls[cli].pi;
                 si = cls[cli].si;
                 cpi = cls[cli].cpi;
@@ -78,39 +79,43 @@ err_t vm_match(
         insn_t* insn = &(pc[pi]);
         switch (insn->op) {
             case VM_OP_NOP: {
-                pi++;
-                debug(); vm_dis(insn);
+                pi++; /* NOP does nothing except running the next instruction. */
+                vm_inspect(); vm_dis(insn);
                 continue;
             }
-            case VM_OP_JMP: {
-                pi += insn->p1;
-                debug(); vm_dis(insn);
+            case VM_OP_JMP: { /* Assumption: only support forward jumping. */
+                pi += insn->p1; /* JMP simply relatively shift to another instruction. */
+                vm_inspect(); vm_dis(insn);
                 continue;
             }
             case VM_OP_RET: {
-                pi = cls[--cli].pi;
-                debug(); vm_dis(insn);
+                pi = cls[--cli].pi; /* Resume top instruction in the call stack. */
+                vm_inspect(); vm_dis(insn);
                 if (cli != 0) continue;
-                if (len) *len = si-start;
+                if (len) *len = si-start; /* Empty stack means entry rule has matched. */
                 return e;
             }
             case VM_OP_CHR: {
                 char ch = (byte_t) insn->p1;
+                /* When meets the same char, consume 1 char and goto next instruction. */
                 if (ch == s[si]) { si++; pi++; }
+                /* Otherwise, match failed, and set error code. */
                 else { m = 0; e = EWRONGCHR; if (len) *len = si-start;}
-                debug(); vm_dis(insn);
+                vm_inspect(); vm_dis(insn);
                 continue;
             }
             case VM_OP_CALL: {
                 if (cli+1 >= clc) growcalls(&cls, &clc);
+                /* Push the next instruction followed by CALL to the call stack. */
                 cls[cli].pi = pi + 1;
                 cls[cli].si = SIZE_MAX;
                 cls[cli].pri = SIZE_MAX;
                 cls[cli].cpi = SIZE_MAX;
                 cls[cli].cut = 0;
                 cli++;
+                /* Then, jump to the definition of method call. */
                 pi += insn->p1;
-                debug(); vm_dis(insn);
+                vm_inspect(); vm_dis(insn);
                 continue;
             }
         }
