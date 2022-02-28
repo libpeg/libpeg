@@ -4,14 +4,14 @@
 
 void test_char_match() {
     printf("---\ntest_char_match\n");
-    byte_t pc[] = {VM_OP_CHR, '0', VM_OP_RET};
+    insn_t pc[] = {{VM_OP_CHR, '0', 0}, {VM_OP_RET, 0, 0}};
     size_t len  = vm_match(pc, "0", 0, 1, 0, 0);
     ASSERT_EQUALS(1, len);
 }
 
 void test_char_not_match() {
     printf("---\ntest_char_not_match\n");
-    byte_t pc[] = {VM_OP_CHR, '0', VM_OP_RET};
+    insn_t pc[] = {{VM_OP_CHR, '0', 0}, {VM_OP_RET, 0, 0}};
     int e = 0;
     size_t len  = vm_match(pc, "1", 0, 1, 0, &e);
     ASSERT_EQUALS(0, len);

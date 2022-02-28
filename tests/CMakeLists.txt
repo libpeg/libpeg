@@ -5,6 +5,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src/)
 
 set(TESTCASES
     test_vm_0001
+    test_vm_0002
 )
 
 

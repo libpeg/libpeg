@@ -22,5 +22,6 @@ enum {
     VM_OP_LSET = 18,
     VM_OP_CUT  = 19,
     VM_OP_PPSH = 20,
-    VM_OP_PPOP = 21
+    VM_OP_PPOP = 21,
+    VM_OP_RNG = 22,
 };

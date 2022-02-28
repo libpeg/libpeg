@@ -2,8 +2,10 @@
 
 #include "types.h"
 
+void vm_dis(insn_t* pc);
+
 size_t vm_match(
-        byte_t*  pc,
+        insn_t*  pc,
         const char* subject,
         size_t   start,
         size_t   end,
