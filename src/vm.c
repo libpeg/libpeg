@@ -40,16 +40,17 @@ void vm_dis(insn_t* pc) {
     }
 }
 
-size_t vm_match(
+err_t vm_match(
         insn_t*  pc,
         const char* s,
         size_t   start,
         size_t   end,
         cap_t*   cap,
-        int*     e) {
+        size_t*  len) {
     end++;
     cap++;
     size_t m = 1, pi = 0, si = start, cli = 0, clc = 8, pri = 0, cpi = 0;
+    err_t e = 0;
 
     callframe_t* cls;
     cls = malloc(sizeof(callframe_t) * clc);
@@ -63,7 +64,7 @@ size_t vm_match(
 
     for (;;) {
         if (!m) {
-            if (cli == 0) { free(cls); return 0; }
+            if (cli == 0) { free(cls); return e; }
             if (cls[cli-1].si == SIZE_MAX) {cli--;}
             else {
                 pi = cls[cli].pi;
@@ -90,12 +91,13 @@ size_t vm_match(
                 pi = cls[--cli].pi;
                 debug(); vm_dis(insn);
                 if (cli != 0) continue;
-                return si-start;
+                if (len) *len = si-start;
+                return e;
             }
             case VM_OP_CHR: {
                 char ch = (byte_t) insn->p1;
                 if (ch == s[si]) { si++; pi++; }
-                else { m = 0; *e = EWRONGCHR; }
+                else { m = 0; e = EWRONGCHR; if (len) *len = si-start;}
                 debug(); vm_dis(insn);
                 continue;
             }
@@ -113,5 +115,5 @@ size_t vm_match(
             }
         }
     }
-    return 0;
+    return e;
 }

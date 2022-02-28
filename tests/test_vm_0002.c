@@ -8,7 +8,9 @@ void test_call_match() {
         {VM_OP_CALL, 2, 0}, {VM_OP_RET, 0, 0},
         {VM_OP_CHR, '0', 0}, {VM_OP_RET, 0, 0}
     };
-    size_t len  = vm_match(pc, "0", 0, 1, 0, 0);
+    size_t len = 0;
+    err_t err = vm_match(pc, "0", 0, 1, 0, &len);
+    ASSERT_EQUALS(EOK, err);
     ASSERT_EQUALS(1, len);
 }
 
@@ -18,10 +20,10 @@ void test_call_not_match() {
         {VM_OP_CALL, 2, 0}, {VM_OP_RET, 0, 0},
         {VM_OP_CHR, '0', 0}, {VM_OP_RET, 0, 0}
     };
-    int e = 0;
-    size_t len  = vm_match(pc, "1", 0, 1, 0, &e);
+    size_t len = 0;
+    err_t err = vm_match(pc, "1", 0, 1, 0, &len);
+    ASSERT_EQUALS(EWRONGCHR, err);
     ASSERT_EQUALS(len, 0);
-    ASSERT_EQUALS(EWRONGCHR, e);
 }
 
 void test_nested_call() {
@@ -32,7 +34,9 @@ void test_nested_call() {
         {VM_OP_CALL, 2, 0}, {VM_OP_RET, 0, 0},
         {VM_OP_CHR, '0', 0}, {VM_OP_RET, 0, 0}
     };
-    size_t len  = vm_match(pc, "0", 0, 1, 0, 0);
+    size_t len = 0;
+    err_t err = vm_match(pc, "0", 0, 1, 0, &len);
+    ASSERT_EQUALS(EOK, err);
     ASSERT_EQUALS(1, len);
 }
 
@@ -44,9 +48,9 @@ void test_nested_call_not_match() {
         {VM_OP_CALL, 2, 0}, {VM_OP_RET, 0, 0},
         {VM_OP_CHR, '0', 0}, {VM_OP_RET, 0, 0}
     };
-    int e;
-    size_t len  = vm_match(pc, "1", 0, 1, 0, &e);
-    ASSERT_EQUALS(len, 0);
+    size_t len = 0;
+    err_t e = vm_match(pc, "1", 0, 1, 0, &len);
+    ASSERT_EQUALS(0, len);
     ASSERT_EQUALS(EWRONGCHR, e);
 }
 
