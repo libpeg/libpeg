@@ -37,6 +37,7 @@
  *
  * Project home page: http://github.com/joewalnes/tinytest
  *
+ * 2020, -Ju Lin <soasme@gmail.com>: generate readable error messages.
  * 2010, -Joe Walnes <joe@walnes.com> http://joewalnes.com
  */
 
@@ -53,6 +54,9 @@
 /* TODO: Generate readable error messages for assert_equals or assert_str_equals */
 #define ASSERT_EQUALS(expected, actual) ASSERT((#actual), (expected) == (actual))
 #define ASSERT_STRING_EQUALS(expected, actual) ASSERT((#actual), strcmp((expected),(actual)) == 0)
+
+#define ASSERT_INT_EQUALS(expected, actual) { static char m[100] = {0}; sprintf(m, "EXPECT %d, ACTUAL %d:", (int)(expected), (int)(actual)); ASSERT(m, (expected) == (actual)); }
+#define ASSERT_SIZE_EQUALS(expected, actual) { static char m[100] = {0}; sprintf(m, "EXPECT %zu, ACTUAL %zu:", (size_t)(expected), (size_t)(actual)); ASSERT(m, (expected) == (actual)); }
 
 /* Run a test() function */
 #define RUN(test_function) tt_execute((#test_function), (test_function))
@@ -73,6 +77,7 @@ int tt_current_line = 0;
 
 void tt_execute(const char* name, void (*test_function)())
 {
+  printf("testcase: %s\n", name);
   tt_current_test_failed = 0;
   test_function();
   if (tt_current_test_failed) {
